@@ -91,13 +91,86 @@ function renderSong(song) {
   const row = document.createElement("tr");
 
   row.innerHTML = `
-    <td>${song.title}</td>
-    <td>${song.artist}</td>
-    <td>${song.genre}</td>
-    <td><button onclick="deleteSong(this)">Delete</button></td>
+    <td><span class="text">${song.title}</span><input class="edit-input" type="text" style="display:none" /></td>
+    <td><span class="text">${song.artist}</span><input class="edit-input" type="text" style="display:none" /></td>
+    <td><span class="text">${song.genre}</span><input class="edit-input" type="text" style="display:none" /></td>
+    <td>
+      <button onclick="deleteSong(this)">Delete</button>
+      <button onclick="toogleEdit(this)">Edit</button>
+    </td>
     `;
 
   playlist.appendChild(row);
+}
+
+function toogleEdit(button) {
+  const row = button.parentElement.parentElement;
+  const cells = row.querySelectorAll("td");
+
+  const isEditing = button.textContent === "Save";
+
+  if (isEditing) {
+    // Save changes
+    const updatedTitle = cells[0].querySelector("input").value.trim();
+    const updatedArtist = cells[1].querySelector("input").value.trim();
+    const updatedGenre = cells[2].querySelector("input").value.trim();
+
+    if (!updatedTitle || !updatedArtist || !updatedGenre) {
+      alert("All fields are required.");
+      return;
+    }
+
+    // Update display text
+    cells[0].querySelector(".text").textContent = updatedTitle;
+    cells[1].querySelector(".text").textContent = updatedArtist;
+    cells[2].querySelector(".text").textContent = updatedGenre;
+
+    // Hide inputs, show exit
+    cells.forEach((cell) => {
+      cell.querySelector(".text").style.display = "";
+      cell.querySelector(".edit-input").style.display = "none";
+    });
+
+    // Update array and save
+    const originalTitle = button.dataset.originalTitle;
+    const originalArtist = button.dataset.originalArtist;
+    // const originalGenre = button.dataset.originalGenre;
+    const index = songs.findIndex(
+      (song) => song.title === originalTitle && song.artist === originalArtist
+    );
+
+    if (index !== -1) {
+      songs[index] = {
+        title: updatedTitle,
+        artist: updatedArtist,
+        genre: updatedGenre,
+      };
+      saveToLocalStorage();
+    }
+
+    button.textContent = "Edit";
+  } else {
+    // Switch to editing mode
+    const title = cells[0].querySelector(".text").textContent;
+    const artist = cells[1].querySelector(".text").textContent;
+    const genre = cells[2].querySelector(".text").textContent;
+
+    cells[0].querySelector("input").value = title;
+    cells[1].querySelector("input").value = artist;
+    cells[2].querySelector("input").value = genre;
+
+    // Show inputs, hide text
+    cells.forEach((cell) => {
+      cell.querySelector(".text").style.display = "none";
+      cell.querySelector(".edit-input").style.display = "";
+    });
+
+    // Store original title & artist for update tracking
+    button.dataset.originalTitle = title;
+    button.dataset.originalArtist = artist;
+
+    button.textContent = "Save";
+  }
 }
 
 window.addEventListener("DOMContentLoaded", loadFromLocalStorage);
