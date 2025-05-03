@@ -20,17 +20,10 @@ function addSong() {
     return;
   }
 
-  // Create a new table row
-  const row = document.createElement("tr");
-
-  row.innerHTML = `
-  <td>${title}</td>
-  <td>${artist}</td>
-  <td>${genre}</td>
-  <td><button onclick="deleteSong(this)">Delete</button></td>
-  `;
-
-  playlist.appendChild(row);
+  const song = { title, artist, genre };
+  songs.push(song);
+  saveToLocalStorage();
+  renderSong(song);
 
   // Clear inputs
   titleInput.value = "";
@@ -44,6 +37,17 @@ function addSong() {
 
 function deleteSong(button) {
   const row = button.parentElement.parentElement;
+  const title = row.children[0].textContent;
+  const artist = row.children[1].textContent;
+  const genre = row.children[2].textContent;
+
+  // Find index and remove from array
+  songs = songs.filter(
+    (song) =>
+      !(song.title === title && song.artist === artist && song.genre === genre)
+  );
+
+  saveToLocalStorage();
   row.remove();
   updateTotalSongs();
 }
@@ -57,7 +61,15 @@ function updateTotalSongs() {
 
 // Clear Playlist Function
 function clearPlaylist() {
+  // Clear DOM
   playlist.innerHTML = "";
+
+  // Clear data
+  songs = [];
+
+  // Clear local storage
+  localStorage.removeItem("playlist");
+
   updateTotalSongs();
 }
 
@@ -74,3 +86,18 @@ function loadFromLocalStorage() {
     updateTotalSongs();
   }
 }
+
+function renderSong(song) {
+  const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td>${song.title}</td>
+    <td>${song.artist}</td>
+    <td>${song.genre}</td>
+    <td><button onclick="deleteSong(this)">Delete</button></td>
+    `;
+
+  playlist.appendChild(row);
+}
+
+window.addEventListener("DOMContentLoaded", loadFromLocalStorage);
