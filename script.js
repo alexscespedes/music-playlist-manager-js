@@ -3,6 +3,8 @@
 const playlist = document.getElementById("playlist");
 const totalSongs = document.getElementById("total-songs");
 
+let songs = [];
+
 // Add Song Function
 function addSong() {
   const titleInput = document.getElementById("song-title");
@@ -57,4 +59,18 @@ function updateTotalSongs() {
 function clearPlaylist() {
   playlist.innerHTML = "";
   updateTotalSongs();
+}
+
+// Local Storage
+function saveToLocalStorage() {
+  localStorage.setItem("playlist", JSON.stringify(songs));
+}
+
+function loadFromLocalStorage() {
+  const stored = localStorage.getItem("playlist");
+  if (stored) {
+    songs = JSON.parse(stored);
+    songs.forEach((song) => renderSong(song));
+    updateTotalSongs();
+  }
 }
