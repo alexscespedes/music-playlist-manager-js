@@ -2,6 +2,7 @@
 
 const playlist = document.getElementById("playlist");
 const totalSongs = document.getElementById("total-songs");
+const genreFilter = document.getElementById("genre-filter");
 
 let songs = [];
 
@@ -31,6 +32,7 @@ function addSong() {
   genreInput.value = "";
 
   updateTotalSongs();
+  updatedGenreFilterOption();
 }
 
 // Delete Song Function
@@ -84,6 +86,7 @@ function loadFromLocalStorage() {
     songs = JSON.parse(stored);
     songs.forEach((song) => renderSong(song));
     updateTotalSongs();
+    updatedGenreFilterOption();
   }
 }
 
@@ -153,6 +156,7 @@ function toggleEdit(button) {
         genre: updatedGenre,
       };
       saveToLocalStorage();
+      updatedGenreFilterOption();
     }
 
     button.textContent = "Edit";
@@ -173,6 +177,33 @@ function toggleEdit(button) {
 
     button.textContent = "Save";
   }
+}
+
+genreFilter.addEventListener("change", function () {
+  const selectedGenre = genreFilter.value;
+  renderFilteredSongs(selectedGenre);
+});
+
+function renderFilteredSongs(filterGenre = "All") {
+  playlist.innerHTML = "";
+
+  const filteredSongs = songs.filter((song) =>
+    filterGenre === "All" ? true : song.genre === filterGenre
+  );
+
+  filteredSongs.forEach((song) => renderSong(song));
+}
+
+function updatedGenreFilterOption() {
+  const uniqueGenres = [...new Set(songs.map((song) => song.genre))];
+  genreFilter.innerHTML = `<option value="All">All</option>`;
+
+  uniqueGenres.forEach((genre) => {
+    const option = document.createElement("option");
+    option.value = genre;
+    option.textContent = genre;
+    genreFilter.appendChild(option);
+  });
 }
 
 window.addEventListener("DOMContentLoaded", loadFromLocalStorage);

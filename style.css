@@ -123,3 +123,7 @@ td button:hover {
   padding: 5px;
   font-size: 14px;
 }
+
+.filter-group {
+  margin-bottom: 20px;
+}
