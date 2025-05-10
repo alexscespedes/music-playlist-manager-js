@@ -91,26 +91,34 @@ function renderSong(song) {
   const row = document.createElement("tr");
 
   row.innerHTML = `
-    <td><span class="text">${song.title}</span><input class="edit-input" type="text" style="display:none" /></td>
-    <td><span class="text">${song.artist}</span><input class="edit-input" type="text" style="display:none" /></td>
-    <td><span class="text">${song.genre}</span><input class="edit-input" type="text" style="display:none" /></td>
+    <td>
+      <span class="text">${song.title}</span>
+      <input class="edit-input" type="text" style="display: none;" />
+    </td>
+    <td>
+      <span class="text">${song.artist}</span>
+      <input class="edit-input" type="text" style="display: none;" />
+    </td>
+    <td>
+      <span class="text">${song.genre}</span>
+      <input class="edit-input" type="text" style="display: none;" />
+    </td>
     <td>
       <button onclick="deleteSong(this)">Delete</button>
-      <button onclick="toogleEdit(this)">Edit</button>
+      <button onclick="toggleEdit(this)">Edit</button>
     </td>
-    `;
+  `;
 
   playlist.appendChild(row);
 }
 
-function toogleEdit(button) {
-  const row = button.parentElement.parentElement;
+function toggleEdit(button) {
+  const row = button.closest("tr");
   const cells = row.querySelectorAll("td");
 
   const isEditing = button.textContent === "Save";
 
   if (isEditing) {
-    // Save changes
     const updatedTitle = cells[0].querySelector("input").value.trim();
     const updatedArtist = cells[1].querySelector("input").value.trim();
     const updatedGenre = cells[2].querySelector("input").value.trim();
@@ -120,21 +128,20 @@ function toogleEdit(button) {
       return;
     }
 
-    // Update display text
+    // Save updates to UI
     cells[0].querySelector(".text").textContent = updatedTitle;
     cells[1].querySelector(".text").textContent = updatedArtist;
     cells[2].querySelector(".text").textContent = updatedGenre;
 
-    // Hide inputs, show exit
-    cells.forEach((cell) => {
-      cell.querySelector(".text").style.display = "";
-      cell.querySelector(".edit-input").style.display = "none";
-    });
+    // Toggle visibility
+    for (let i = 0; i < 3; i++) {
+      cells[i].querySelector(".text").style.display = "";
+      cells[i].querySelector("input").style.display = "none";
+    }
 
-    // Update array and save
+    // Update the data
     const originalTitle = button.dataset.originalTitle;
     const originalArtist = button.dataset.originalArtist;
-    // const originalGenre = button.dataset.originalGenre;
     const index = songs.findIndex(
       (song) => song.title === originalTitle && song.artist === originalArtist
     );
@@ -150,24 +157,19 @@ function toogleEdit(button) {
 
     button.textContent = "Edit";
   } else {
-    // Switch to editing mode
-    const title = cells[0].querySelector(".text").textContent;
-    const artist = cells[1].querySelector(".text").textContent;
-    const genre = cells[2].querySelector(".text").textContent;
+    // Switch to edit mode
+    for (let i = 0; i < 3; i++) {
+      const textEl = cells[i].querySelector(".text");
+      const inputEl = cells[i].querySelector("input");
+      if (textEl && inputEl) {
+        inputEl.value = textEl.textContent;
+        textEl.style.display = "none";
+        inputEl.style.display = "";
+      }
+    }
 
-    cells[0].querySelector("input").value = title;
-    cells[1].querySelector("input").value = artist;
-    cells[2].querySelector("input").value = genre;
-
-    // Show inputs, hide text
-    cells.forEach((cell) => {
-      cell.querySelector(".text").style.display = "none";
-      cell.querySelector(".edit-input").style.display = "";
-    });
-
-    // Store original title & artist for update tracking
-    button.dataset.originalTitle = title;
-    button.dataset.originalArtist = artist;
+    button.dataset.originalTitle = cells[0].querySelector(".text").textContent;
+    button.dataset.originalArtist = cells[1].querySelector(".text").textContent;
 
     button.textContent = "Save";
   }
