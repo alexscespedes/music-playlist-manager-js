@@ -21,7 +21,12 @@ function addSong() {
     return;
   }
 
-  const song = { title, artist, genre };
+  const song = {
+    id: Date.now(),
+    title,
+    artist,
+    genre,
+  };
   songs.push(song);
   saveToLocalStorage();
   renderSong(song);
@@ -39,15 +44,10 @@ function addSong() {
 
 function deleteSong(button) {
   const row = button.parentElement.parentElement;
-  const title = row.children[0].textContent;
-  const artist = row.children[1].textContent;
-  const genre = row.children[2].textContent;
+  const id = Number(row.dataset.id);
 
-  // Find index and remove from array
-  songs = songs.filter(
-    (song) =>
-      !(song.title === title && song.artist === artist && song.genre === genre)
-  );
+  // Find out the song from the array
+  songs = songs.filter((song) => song.id !== id);
 
   saveToLocalStorage();
   row.remove();
@@ -92,6 +92,7 @@ function loadFromLocalStorage() {
 
 function renderSong(song) {
   const row = document.createElement("tr");
+  row.dataset.id = song.id;
 
   row.innerHTML = `
     <td>
