@@ -21,7 +21,13 @@ function addSong() {
     return;
   }
 
-  const song = { title, artist, genre };
+  const song = {
+    id: Date.now(),
+    title,
+    artist,
+    genre,
+  };
+
   songs.push(song);
   saveToLocalStorage();
   renderSong(song);
@@ -39,17 +45,15 @@ function addSong() {
 
 function deleteSong(button) {
   const row = button.parentElement.parentElement;
-  const title = row.children[0].textContent;
-  const artist = row.children[1].textContent;
-  const genre = row.children[2].textContent;
+  const songId = parseInt(row.dataset.id);
 
-  // Find index and remove from array
-  songs = songs.filter(
-    (song) =>
-      !(song.title === title && song.artist === artist && song.genre === genre)
-  );
+  // Remove from songs array
+  const index = songs.findIndex((song) => song.id === songId);
+  if (index !== -1) {
+    songs.splice(index, 1);
+    saveToLocalStorage();
+  }
 
-  saveToLocalStorage();
   row.remove();
   updateTotalSongs();
 }
@@ -92,6 +96,7 @@ function loadFromLocalStorage() {
 
 function renderSong(song) {
   const row = document.createElement("tr");
+  row.dataset.id = song.id;
 
   row.innerHTML = `
     <td>
@@ -118,8 +123,8 @@ function renderSong(song) {
 function toggleEdit(button) {
   const row = button.closest("tr");
   const cells = row.querySelectorAll("td");
-
   const isEditing = button.textContent === "Save";
+  const songId = parseInt(row.dataset.id);
 
   if (isEditing) {
     const updatedTitle = cells[0].querySelector("input").value.trim();
@@ -131,49 +136,36 @@ function toggleEdit(button) {
       return;
     }
 
-    // Save updates to UI
-    cells[0].querySelector(".text").textContent = updatedTitle;
-    cells[1].querySelector(".text").textContent = updatedArtist;
-    cells[2].querySelector(".text").textContent = updatedGenre;
-
     // Toggle visibility
     for (let i = 0; i < 3; i++) {
+      cells[i].querySelector(".text").textContent = [
+        updatedTitle,
+        updatedArtist,
+        updatedGenre,
+      ][i];
       cells[i].querySelector(".text").style.display = "";
       cells[i].querySelector("input").style.display = "none";
     }
 
     // Update the data
-    const originalTitle = button.dataset.originalTitle;
-    const originalArtist = button.dataset.originalArtist;
-    const index = songs.findIndex(
-      (song) => song.title === originalTitle && song.artist === originalArtist
-    );
-
+    const index = songs.findIndex((song) => song.id === songId);
     if (index !== -1) {
-      songs[index] = {
-        title: updatedTitle,
-        artist: updatedArtist,
-        genre: updatedGenre,
-      };
+      songs[index].title = updatedTitle;
+      songs[index].artist = updatedArtist;
+      songs[index].genre = updatedGenre;
       saveToLocalStorage();
       updatedGenreFilterOption();
     }
 
     button.textContent = "Edit";
   } else {
-    // Switch to edit mode
     for (let i = 0; i < 3; i++) {
       const textEl = cells[i].querySelector(".text");
       const inputEl = cells[i].querySelector("input");
-      if (textEl && inputEl) {
-        inputEl.value = textEl.textContent;
-        textEl.style.display = "none";
-        inputEl.style.display = "";
-      }
+      inputEl.value = textEl.textContent;
+      textEl.style.display = "none";
+      inputEl.style.display = "";
     }
-
-    button.dataset.originalTitle = cells[0].querySelector(".text").textContent;
-    button.dataset.originalArtist = cells[1].querySelector(".text").textContent;
 
     button.textContent = "Save";
   }
