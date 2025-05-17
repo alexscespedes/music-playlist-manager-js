@@ -29,8 +29,10 @@ function addSong() {
   };
 
   songs.push(song);
-  saveToLocalStorage();
   renderSong(song);
+  saveToLocalStorage();
+  renderFilteredSongs(genreFilter.value);
+  updatedGenreFilterOption();
 
   // Clear inputs
   titleInput.value = "";
@@ -38,7 +40,6 @@ function addSong() {
   genreInput.value = "";
 
   updateTotalSongs();
-  updatedGenreFilterOption();
 }
 
 // Delete Song Function
@@ -52,6 +53,8 @@ function deleteSong(button) {
   if (index !== -1) {
     songs.splice(index, 1);
     saveToLocalStorage();
+    updatedGenreFilterOption();
+    renderFilteredSongs(genreFilter.value);
   }
 
   row.remove();
@@ -155,6 +158,7 @@ function toggleEdit(button) {
       songs[index].genre = updatedGenre;
       saveToLocalStorage();
       updatedGenreFilterOption();
+      renderFilteredSongs(genreFilter.value);
     }
 
     button.textContent = "Edit";
